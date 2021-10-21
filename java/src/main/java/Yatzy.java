@@ -1,239 +1,142 @@
-public class Yatzy {
+import java.util.Arrays;
 
-    public static int chance(int d1, int d2, int d3, int d4, int d5)
-    {
+public class Yatzy {
+    private int[] dice;
+
+    public Yatzy(int[] providedDice) {
+        if (providedDice.length != 5) {
+            throw new IllegalArgumentException("There should be exactly 5 dice");
+        }
+        if (Arrays.stream(providedDice).anyMatch(die -> die > 6 || die < 1)) {
+            throw new IllegalArgumentException("The dice values are expected to be between 1 and 6");
+        }
+        this.dice = providedDice;
+    }
+
+    public int chance() {
         int total = 0;
-        total += d1;
-        total += d2;
-        total += d3;
-        total += d4;
-        total += d5;
+        for (int die : this.dice) {
+            total += die;
+        }
         return total;
     }
 
-    public static int yatzy(int... dice)
-    {
-        int[] counts = new int[6];
-        for (int die : dice)
-            counts[die-1]++;
-        for (int i = 0; i != 6; i++)
-            if (counts[i] == 5)
+    public int yatzy() {
+        int[] counts = this.computeCountArray();
+        for (int c : counts) {
+            if (c == counts.length - 1) {
                 return 50;
-        return 0;
-    }
-
-    public static int ones(int d1, int d2, int d3, int d4, int d5) {
-        int sum = 0;
-        if (d1 == 1) sum++;
-        if (d2 == 1) sum++;
-        if (d3 == 1) sum++;
-        if (d4 == 1) sum++;
-        if (d5 == 1) 
-            sum++;
-
-        return sum;
-    }
-
-    public static int twos(int d1, int d2, int d3, int d4, int d5) {
-        int sum = 0;
-        if (d1 == 2) sum += 2;
-        if (d2 == 2) sum += 2;
-        if (d3 == 2) sum += 2;
-        if (d4 == 2) sum += 2;
-        if (d5 == 2) sum += 2;
-        return sum;
-    }
-
-    public static int threes(int d1, int d2, int d3, int d4, int d5) {
-        int s;    
-        s = 0;
-        if (d1 == 3) s += 3;
-        if (d2 == 3) s += 3;
-        if (d3 == 3) s += 3;
-        if (d4 == 3) s += 3;
-        if (d5 == 3) s += 3;
-        return s;
-    }
-
-    protected int[] dice;
-    public Yatzy(int d1, int d2, int d3, int d4, int _5)
-    {
-        dice = new int[5];
-        dice[0] = d1;
-        dice[1] = d2;
-        dice[2] = d3;
-        dice[3] = d4;
-        dice[4] = _5;
-    }
-
-    public int fours()
-    {
-        int sum;    
-        sum = 0;
-        for (int at = 0; at != 5; at++) {
-            if (dice[at] == 4) {
-                sum += 4;
             }
         }
-        return sum;
-    }
-
-    public int fives()
-    {
-        int s = 0;
-        int i;
-        for (i = 0; i < dice.length; i++) 
-            if (dice[i] == 5)
-                s = s + 5;
-        return s;
-    }
-
-    public int sixes()
-    {
-        int sum = 0;
-        for (int at = 0; at < dice.length; at++) 
-            if (dice[at] == 6)
-                sum = sum + 6;
-        return sum;
-    }
-
-    public static int score_pair(int d1, int d2, int d3, int d4, int d5)
-    {
-        int[] counts = new int[6];
-        counts[d1-1]++;
-        counts[d2-1]++;
-        counts[d3-1]++;
-        counts[d4-1]++;
-        counts[d5-1]++;
-        int at;
-        for (at = 0; at != 6; at++)
-            if (counts[6-at-1] >= 2)
-                return (6-at)*2;
         return 0;
     }
 
-    public static int two_pair(int d1, int d2, int d3, int d4, int d5)
-    {
-        int[] counts = new int[6];
-        counts[d1-1]++;
-        counts[d2-1]++;
-        counts[d3-1]++;
-        counts[d4-1]++;
-        counts[d5-1]++;
-        int n = 0;
+    public int ones(){
+        return this.sumOfDice(1);
+    }
+    public int twos(){
+        return this.sumOfDice(2);
+    }
+    public int threes(){
+        return this.sumOfDice(3);
+    }
+    public int fours(){
+        return this.sumOfDice(4);
+    }
+    public int fives(){
+        return this.sumOfDice(5);
+    }
+    public int sixes(){
+        return this.sumOfDice(6);
+    }
+
+    public int onePair() {
+        return this.computeXOfAKind(2);
+    }
+
+    public int twoPair() {
+        int[] counts = this.computeCountArray();
+        int numberOfPair = 0;
         int score = 0;
-        for (int i = 0; i < 6; i += 1)
-            if (counts[6-i-1] >= 2) {
-                n++;
-                score += (6-i);
-            }        
-        if (n == 2)
+        for (int i = this.dice.length - 1 ; i >= 0; i--) {
+            if (counts[i] >= 2) {
+                numberOfPair++;
+                score += (i + 1);
+            }
+        }
+        if (numberOfPair == 2) {
             return score * 2;
-        else
-            return 0;
-    }
-
-    public static int four_of_a_kind(int _1, int _2, int d3, int d4, int d5)
-    {
-        int[] tallies;
-        tallies = new int[6];
-        tallies[_1-1]++;
-        tallies[_2-1]++;
-        tallies[d3-1]++;
-        tallies[d4-1]++;
-        tallies[d5-1]++;
-        for (int i = 0; i < 6; i++)
-            if (tallies[i] >= 4)
-                return (i+1) * 4;
+        }
         return 0;
     }
 
-    public static int three_of_a_kind(int d1, int d2, int d3, int d4, int d5)
-    {
-        int[] t;
-        t = new int[6];
-        t[d1-1]++;
-        t[d2-1]++;
-        t[d3-1]++;
-        t[d4-1]++;
-        t[d5-1]++;
-        for (int i = 0; i < 6; i++)
-            if (t[i] >= 3)
-                return (i+1) * 3;
-        return 0;
+    public int fourOfAKind() {
+        return this.computeXOfAKind(4);
     }
 
-    public static int smallStraight(int d1, int d2, int d3, int d4, int d5)
-    {
-        int[] tallies;
-        tallies = new int[6];
-        tallies[d1-1] += 1;
-        tallies[d2-1] += 1;
-        tallies[d3-1] += 1;
-        tallies[d4-1] += 1;
-        tallies[d5-1] += 1;
-        if (tallies[0] == 1 &&
-            tallies[1] == 1 &&
-            tallies[2] == 1 &&
-            tallies[3] == 1 &&
-            tallies[4] == 1)
+    public int threeOfAKind() {
+        return this.computeXOfAKind(3);
+    }
+
+    public int smallStraight() {
+        int[] counts = this.computeCountArray();
+        boolean isSmallStraight = Arrays.stream(Arrays.copyOfRange(counts,0,4)).allMatch(count -> count == 1);
+
+        if (isSmallStraight){
             return 15;
+        }
         return 0;
     }
 
-    public static int largeStraight(int d1, int d2, int d3, int d4, int d5)
-    {
-        int[] tallies;
-        tallies = new int[6];
-        tallies[d1-1] += 1;
-        tallies[d2-1] += 1;
-        tallies[d3-1] += 1;
-        tallies[d4-1] += 1;
-        tallies[d5-1] += 1;
-        if (tallies[1] == 1 &&
-            tallies[2] == 1 &&
-            tallies[3] == 1 &&
-            tallies[4] == 1
-            && tallies[5] == 1)
+    public int largeStraight() {
+        int[] counts = this.computeCountArray();
+        boolean isLargeStraight = Arrays.stream(Arrays.copyOfRange(counts,1,5)).allMatch(count -> count == 1);
+
+        if (isLargeStraight) {
             return 20;
+        }
         return 0;
     }
 
-    public static int fullHouse(int d1, int d2, int d3, int d4, int d5)
-    {
-        int[] tallies;
-        boolean _2 = false;
-        int i;
-        int _2_at = 0;
-        boolean _3 = false;
-        int _3_at = 0;
+    public int fullHouse() {
+        int[] counts = this.computeCountArray();
+        int pairScore = computeStrictXSome(2, counts);
+        int threeScore = computeStrictXSome(3, counts);
+        if (pairScore > 0 && threeScore > 0) {
+            return pairScore + threeScore;
+        }
+        return 0;
+    }
 
+    private int[] computeCountArray() {
+        int[] counts = new int[6];
+        for (int die : dice) {
+            counts[die - 1]++;
+        }
+        return counts;
+    }
 
+    private int sumOfDice(int countedNumber) {
+        return Arrays.stream(this.dice).filter(die -> die == countedNumber).sum();
+    }
 
-
-        tallies = new int[6];
-        tallies[d1-1] += 1;
-        tallies[d2-1] += 1;
-        tallies[d3-1] += 1;
-        tallies[d4-1] += 1;
-        tallies[d5-1] += 1;
-
-        for (i = 0; i != 6; i += 1)
-            if (tallies[i] == 2) {
-                _2 = true;
-                _2_at = i+1;
+    private int computeXOfAKind(int expectedNumberOfElement) {
+        int[] counts = this.computeCountArray();
+        for (int i = counts.length - 1; i >= 0; i--) {
+            if (counts[i] >= expectedNumberOfElement) {
+                return (i + 1) * expectedNumberOfElement;
             }
+        }
+        return 0;
+    }
 
-        for (i = 0; i != 6; i += 1)
-            if (tallies[i] == 3) {
-                _3 = true;
-                _3_at = i+1;
+    private int computeStrictXSome(int expectedNumberOfElement, int[] counts) {
+        for (int i = counts.length - 1; i >= 0; i--) {
+            if (counts[i] == expectedNumberOfElement) {
+                return (i + 1) * expectedNumberOfElement;
             }
-
-        if (_2 && _3)
-            return _2_at * 2 + _3_at * 3;
-        else
-            return 0;
+        }
+        return 0;
     }
 }
 
